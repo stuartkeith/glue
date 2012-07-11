@@ -247,7 +247,7 @@ For example if you want to remove the block size from the output CSS (old ``--no
 
 .. code-block:: bash
 
-    $ glue source output --each-template="%(class_name)s{background-position:%(x)s %(y)s;}"
+    $ glue source output --each-template=".%(class_name)s{background-position:%(x)s %(y)s;}"
 
 .. note::
     New in version 0.2.1
