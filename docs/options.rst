@@ -229,7 +229,7 @@ For example if you want to add quotes around the sprite image:
 
 .. code-block:: bash
 
-    $ glue source output --global-template="%(all_classes)s{background-image:url('%(sprite_url)s');background-repeat:no-repeat}"
+    $ glue source output --global-template="{{ all_classes }} { background-image:url('{{ sprite_url }}'); background-repeat: no-repeat; }"
 
 .. note::
     New in version 0.2.1
@@ -247,7 +247,7 @@ For example if you want to remove the block size from the output CSS (old ``--no
 
 .. code-block:: bash
 
-    $ glue source output --each-template=".%(class_name)s{background-position:%(x)s %(y)s;}"
+    $ glue source output --each-template=".{{ class_name }} { background-position: {{ x }}px {{ y }}px; }"
 
 .. note::
     New in version 0.2.1

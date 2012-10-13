@@ -75,8 +75,8 @@ project                  False
 quiet                    False
 cachebuster              False
 cachebuster-filename     False
-global_template          '%(all_classes)s{background-image:url(%(sprite_url)s);background-repeat:no-repeat}\\n'
-each_template            '.%(class_name)s{background-position:%(x)s %(y)s;width:%(width)s;height:%(height)s;}\\n'
-ratio_template           '\@media only screen and (-webkit-min-device-pixel-ratio: %(ratio)s), only screen and (min--moz-device-pixel-ratio: %(ratio)s), only screen and (-o-min-device-pixel-ratio: %(ratio_fraction)s), only screen and (min-device-pixel-ratio: %(ratio)s) {%(all_classes)s{background-image:url(%(sprite_url)s);-webkit-background-size: %(width)s %(height)s;-moz-background-size: %(width)s %(height)s;background-size: %(width)s %(height)s;}}\\n'
+global_template          '{{ all_classes }} { background-image: url({{ sprite_url }}); background-repeat: no-repeat; }\\n'
+each_template            '.{{ class_name }} { background-position: {{ x }}px {{ y }}px; width: {{ width }}px; height: {{ height }}px; }\\n'
+ratio_template           '\@media only screen and (-webkit-min-device-pixel-ratio: {{ ratio }}), only screen and (min--moz-device-pixel-ratio: {{ ratio }}), only screen and (-o-min-device-pixel-ratio: {{ ratio_fraction }}), only screen and (min-device-pixel-ratio: {{ ratio }}) { {{ all_classes }} { background-image: url({{ sprite_url }}); -webkit-background-size: {{ width }}px {{ height }}px; -moz-background-size: {{ width }}px {{ height }}px; background-size: {{ width }}px {{ height }}px; } }\\n'
 ======================== ======================================================================================
 

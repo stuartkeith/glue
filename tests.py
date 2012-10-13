@@ -164,16 +164,16 @@ EXPECTED_VERYSIMPLE_CAMELCASE = """
 
 EXPECTED_VERYSIMPLE_RATIOS = """.sprite-verysimple-red,
 .sprite-verysimple-green,
-.sprite-verysimple-blue{background-image:url(verysimple.png);background-repeat:no-repeat}
-.sprite-verysimple-red{background-position:-5px -5px;width:13px;height:13px;}
-.sprite-verysimple-green{background-position:-26px -5px;width:13px;height:13px;}
-.sprite-verysimple-blue{background-position:-5px -26px;width:13px;height:13px;}
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (min--moz-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 150/100), only screen and (min-device-pixel-ratio: 1.5) {.sprite-verysimple-red,
+.sprite-verysimple-blue { background-image: url(verysimple.png); background-repeat: no-repeat; }\
+.sprite-verysimple-red { background-position: -5px -5px; width: 13px; height: 13px; }\
+.sprite-verysimple-green { background-position: -26px -5px; width: 13px; height: 13px; }\
+.sprite-verysimple-blue { background-position: -5px -26px; width: 13px; height: 13px; }\
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (min--moz-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 150/100), only screen and (min-device-pixel-ratio: 1.5) { .sprite-verysimple-red,
 .sprite-verysimple-green,
-.sprite-verysimple-blue{background-image:url(verysimple@1.5x.png);-webkit-background-size: 45px 45px;-moz-background-size: 45px 45px;background-size: 45px 45px;}}
-@media only screen and (-webkit-min-device-pixel-ratio: 2.0), only screen and (min--moz-device-pixel-ratio: 2.0), only screen and (-o-min-device-pixel-ratio: 200/100), only screen and (min-device-pixel-ratio: 2.0) {.sprite-verysimple-red,
+.sprite-verysimple-blue { background-image: url(verysimple@1.5x.png); -webkit-background-size: 45px 45px; -moz-background-size: 45px 45px; background-size: 45px 45px; } }\
+@media only screen and (-webkit-min-device-pixel-ratio: 2.0), only screen and (min--moz-device-pixel-ratio: 2.0), only screen and (-o-min-device-pixel-ratio: 200/100), only screen and (min-device-pixel-ratio: 2.0) { .sprite-verysimple-red,
 .sprite-verysimple-green,
-.sprite-verysimple-blue{background-image:url(verysimple@2x.png);-webkit-background-size: 45px 45px;-moz-background-size: 45px 45px;background-size: 45px 45px;}}
+.sprite-verysimple-blue { background-image: url(verysimple@2x.png); -webkit-background-size: 45px 45px; -moz-background-size: 45px 45px; background-size: 45px 45px; } }\
 """
 
 
@@ -777,7 +777,7 @@ class TestGlue(unittest.TestCase):
         # Test no-size template
         manager = self.generate_manager(glue.SimpleSpriteManager,
                                         'verysimple',
-                                        {'each_template': ('.%(class_name)s{background-position:%(x)s %(y)s;}\n')})
+                                        {'each_template': ('.{{ class_name }} { background-position:{{ x }}px {{ y }}px; }\n')})
         manager.process()
 
         css_path = os.path.join(self.output_path, 'verysimple.css')

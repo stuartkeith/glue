@@ -12,6 +12,7 @@ import ConfigParser
 from optparse import OptionParser, OptionGroup
 
 from PIL import Image as PImage
+import jinja2
 
 __version__ = '0.2.6.1'
 
@@ -50,36 +51,36 @@ DEFAULT_SETTINGS = {
     'cachebuster': False,
     'cachebuster-filename': False,
     'global_template':
-        ('%(all_classes)s{background-image:url(%(sprite_url)s);'
-         'background-repeat:no-repeat}\n'),
+        ('{{ all_classes }} { background-image: url({{ sprite_url }}); '
+         'background-repeat: no-repeat; }\n'),
     'each_template':
-        ('.%(class_name)s{background-position:%(x)s %(y)s;'
-         'width:%(width)s;height:%(height)s;}\n'),
+        ('.{{ class_name }} { background-position: {{ x }}px {{ y }}px; '
+         'width: {{ width }}px; height: {{ height }}px; }\n'),
     'ratio_template':
         ('@media '
-         'only screen and (-webkit-min-device-pixel-ratio: %(ratio)s), '
-         'only screen and (min--moz-device-pixel-ratio: %(ratio)s), '
-         'only screen and (-o-min-device-pixel-ratio: %(ratio_fraction)s), '
-         'only screen and (min-device-pixel-ratio: %(ratio)s) {'
-         '%(all_classes)s{background-image:url(%(sprite_url)s);'
-         '-webkit-background-size: %(width)s %(height)s;'
-         '-moz-background-size: %(width)s %(height)s;'
-         'background-size: %(width)s %(height)s;'
-         '}}\n')
+         'only screen and (-webkit-min-device-pixel-ratio: {{ ratio }}), '
+         'only screen and (min--moz-device-pixel-ratio: {{ ratio }}), '
+         'only screen and (-o-min-device-pixel-ratio: {{ ratio_fraction }}), '
+         'only screen and (min-device-pixel-ratio: {{ ratio }}) { '
+         '{{ all_classes }} { background-image: url({{ sprite_url }}); '
+         '-webkit-background-size: {{ width }}px {{ height }}px; '
+         '-moz-background-size: {{ width }}px {{ height }}px; '
+         'background-size: {{ width }}px {{ height }}px; '
+         '} }\n')
     }
 
 TEST_HTML_TEMPLATE = """
 <html><head><title>Glue Sprite Test Html</title>
-<link rel="stylesheet" type="text/css" href="%(css_url)s"></head><body>
+<link rel="stylesheet" type="text/css" href="{{ css_url }}"></head><body>
 <style type="text/css">tr div:hover{ border:1px solid #ccc;}
 tr div{ border:1px solid white;}</style><h1>CSS Classes</h1><table>
-<tr><th>CSS Class</th><th>Result</th></tr>%(sprites)s</table>
+<tr><th>CSS Class</th><th>Result</th></tr>{{ sprites }}</table>
 <p><em>Generated using <a href="http://gluecss.com"/>Glue v%(version)s</a>
 </em></p></body></html>
 """
 
 TEST_HTML_SPRITE_TEMPLATE = """
-<tr><td>.%(class_name)s </td><td><div class="%(class_name)s"></div></td></tr>
+<tr><td>.{{ class_name }}</td><td><div class="{{ class_name }}"></div></td></tr>
 """
 
 
@@ -753,36 +754,42 @@ class Sprite(object):
                                                   if ':' not in i.class_name])
 
         # add the global style for all the sprites for less bloat
-        template = self.config.global_template.decode('unicode-escape')
-        css_file.write(template % {'all_classes': class_names,
+        template_string = self.config.global_template.decode('unicode-escape')
+        template = jinja2.Template(template_string)
+        css_file.write(template.render({'all_classes': class_names,
                                    'sprite_url': self.image_url(),
-                                   'namespace': self.namespace})
+                                   'namespace': self.namespace}))
 
         # compile one template for each file
         margin = int(self.config.margin)
 
+        template_string = self.config.each_template.decode('unicode-escape')
+        template = jinja2.Template(template_string)
+
         for image in self.images:
 
-            x = '%spx' % round_up((image.x * -1 - margin * self.max_ratio) / self.max_ratio)
-            y = '%spx' % round_up((image.y * -1 - margin * self.max_ratio) / self.max_ratio)
+            x = round_up((image.x * -1 - margin * self.max_ratio) / self.max_ratio)
+            y = round_up((image.y * -1 - margin * self.max_ratio) / self.max_ratio)
 
-            height = '%spx' % round_up((image.height / self.max_ratio) + image.vertical_padding)
-            width = '%spx' % round_up((image.width / self.max_ratio) + image.horizontal_padding)
+            height = round_up((image.height / self.max_ratio) + image.vertical_padding)
+            width = round_up((image.width / self.max_ratio) + image.horizontal_padding)
 
-            template = self.config.each_template.decode('unicode-escape')
-            css_file.write(template % {'class_name': image.class_name,
+            css_file.write(template.render({'class_name': image.class_name,
                                        'sprite_url': self.image_url(),
                                        'height': height,
                                        'width': width,
                                        'y': y,
-                                       'x': x})
+                                       'x': x}))
 
         # If we have some additional ratio, we need to add one media query
         # for each one.
         if len(self.ratios) > 1:
             canvas_size = zip(('width', 'height'),
-                              map(lambda s: '%spx' % int(s / self.max_ratio),
+                              map(lambda s: int(s / self.max_ratio),
                                   self.canvas_size))
+
+            template_string = self.config.ratio_template.decode('unicode_escape')
+            template = jinja2.Template(template_string)
 
             for ratio in self.ratios:
                 if ratio != 1:
@@ -791,7 +798,7 @@ class Sprite(object):
                                 sprite_url=self.image_url(ratio),
                                 all_classes=class_names,
                                 **dict(canvas_size))
-                    css_file.write(self.config.ratio_template % data)
+                    css_file.write(template.render(data))
         css_file.close()
 
     def save_html(self):
@@ -813,13 +820,15 @@ class Sprite(object):
         class_names = [i.class_name for i in self.images \
                                                 if ':' not in i.class_name]
 
-        sprite_template = TEST_HTML_SPRITE_TEMPLATE.decode('unicode-escape')
-        sprites_html = [sprite_template % {'class_name':c} for c in class_names]
+        sprite_template_string = TEST_HTML_SPRITE_TEMPLATE.decode('unicode-escape')
+        sprite_template = jinja2.Template(sprite_template_string)
+        sprites_html = [sprite_template.render({'class_name':c} for c in class_names)]
 
-        file_template = TEST_HTML_TEMPLATE.decode('unicode-escape')
-        html_file.write(file_template % {'sprites': ''.join(sprites_html),
+        file_template_string = TEST_HTML_TEMPLATE.decode('unicode-escape')
+        file_template = jinja2.Template(file_template_string)
+        html_file.write(file_template.write({'sprites': ''.join(sprites_html),
                                          'css_url': '%s.%s' % (self.filename, extension),
-                                         'version': __version__})
+                                         'version': __version__}))
         html_file.close()
 
     @cached_property
