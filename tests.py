@@ -186,9 +186,16 @@ class SimpleCssCompiler(object):
         rules = ['%s}' % r for r in css_text.split('}') if r.strip()]
 
         for rule in rules:
-            selectors, styles = rule.split('{', 1)
-            selectors = selectors.split(',')
-            styles = [s.split(':') for s in styles.replace('}', '').split(';') if s]
+            selectors, styles_raw = rule.split('{', 1)
+            selectors = [s.strip() for s in selectors.split(',')]
+
+            styles = []
+
+            for s in styles_raw.replace('}', '').split(';'):
+                s = s.strip()
+
+                if s:
+                    styles.append([s.strip() for s in s.split(':')])
 
             for selector in selectors:
                 for key, value in styles:
